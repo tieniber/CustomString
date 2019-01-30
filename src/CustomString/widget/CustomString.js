@@ -67,21 +67,26 @@ define([
 
         _updateRendering : function (callback) {
             logger.debug(this.id + "._updateRendering");
-            mx.ui.action(this.sourceMF, {
-                params: {
-                    applyto     : "selection",
-                    guids       : [this._contextObj.getGuid()]
-                },
-                callback     : lang.hitch(this, this._processSourceMFCallback, callback),
-                error        : lang.hitch(this, function(error) {
-                    alert(error.description);
-                    this._executeCallback(callback, "_updateRendering error");
-                }),
-                onValidation : lang.hitch(this, function(validations) {
-                    alert("There were " + validations.length + " validation errors");
-                    this._executeCallback(callback, "_updateRendering onValidation");
-                })
-            }, this);
+            if(this._contextObj) {
+                mx.ui.action(this.sourceMF, {
+                    params: {
+                        applyto     : "selection",
+                        guids       : [this._contextObj.getGuid()]
+                    },
+                    callback     : lang.hitch(this, this._processSourceMFCallback, callback),
+                    error        : lang.hitch(this, function(error) {
+                        alert(error.description);
+                        this._executeCallback(callback, "_updateRendering error");
+                    }),
+                    onValidation : lang.hitch(this, function(validations) {
+                        alert("There were " + validations.length + " validation errors");
+                        this._executeCallback(callback, "_updateRendering onValidation");
+                    })
+                }, this);
+            } else {
+                this._executeCallback(callback, "_updateRenderingCallback");
+            }
+            
         },
 
         _processSourceMFCallback: function (callback, returnedString) {
