@@ -1,68 +1,45 @@
-
-// Required module list. Remove unnecessary modules, you can always get them back from the boilerplate.
 require([
-    'dojo/_base/declare', 
-    'dojo/_base/lang',
-    'CustomString/widget/CustomString'
-], function (declare, dojoLang,_customStringNoContextWidget) {
-   
-    // Declare widget's prototype.
+    "dojo/_base/declare",
+    "dojo/_base/lang",
+    "CustomString/widget/CustomString"
+], function (declare, lang, _customStringNoContextWidget) {
+
     return declare("CustomString.widget.CustomStringNoContext", [ _customStringNoContextWidget ], {
 
-        // dijit._WidgetBase.postCreate is called after constructing the widget. Implement to do extra setup work.
         postCreate: function() {
+            logger.debug(this.id + ".postCreate");
             this._setupEvents();
-            this._render();
         },
 
-        // mxui.widget._WidgetBase.update is called when context is changed or initialized. Implement to re-render and / or fetch data.
-        
-         // Attach events to HTML dom elements
         _setupEvents: function() {
-            if(this.mfToExecute){
-                this.connect(this.customString, "click", this._executeMicroflow)};
-        },
-        
-   
-        _render : function () {
-           mx.data.action({
-                params       : {
-                    actionname : this.sourceMF
-                },      
-                callback     : dojoLang.hitch(this, this._processSourceMFCallback),
-                error        : dojoLang.hitch(this, function(error) {
-                    alert(error.description);
-                }),
-                onValidation : dojoLang.hitch(this, function(validations) {
-                    alert("There were " + validations.length + " validation errors");
-                })
-            });
-        },
-
-        _executeMicroflow: function () {
+            logger.debug(this.id + "._setupEvents");
             if (this.mfToExecute) {
-                mx.data.action({
-                    store: {
-                       caller: this.mxform
-                    },
-                    params: {
-                        actionname: this.mfToExecute
-                    },
-                    callback: function () {
-                        // ok
-                    },
-                    error: function () {
-                        // error
-                    }
-
-                });
+                this.connect(this.customString, "click", this._executeMicroflow);
             }
         },
 
+        _render : function (callback) {
+            logger.debug(this.id + "._render");
+            mx.ui.action(this.sourceMF, {
+                callback     : lang.hitch(this, this._processSourceMFCallback, callback),
+                error        : lang.hitch(this, function(error) {
+                    alert(error.description);
+                    this._executeCallback(callback, "_render error cb");
+                }),
+                onValidation : lang.hitch(this, function(validations) {
+                    alert("There were " + validations.length + " validation errors");
+                    this._executeCallback(callback, "_render onvalidation cb");
+                })
+            }, this);
+        },
 
+        _executeMicroflow: function () {
+            logger.debug(this.id + "._executeMicroflow");
+            if (this.mfToExecute) {
+                mx.ui.action(this.mfToExecute, {}, this);
+            }
+        }
     });
 });
 
-require(["CustomString/widget/CustomStringNoContext"], function() {
-    "use strict";
-});
+require(["CustomString/widget/CustomStringNoContext"]);
